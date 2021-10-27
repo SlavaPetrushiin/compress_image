@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/modal.css">
+    <link rel="stylesheet" href="./css/loader.css">
+</head>
+
+<body>
+    <div id="formElem" class="wrapper-page">
+        <form class="form-photos">
+            <label class="label_photos" class="label">
+                <input class="photos" type="file" name="photos" accept="image/*" multiple>
+            </label>
+            <ul class="list_preview"></ul>
+            <div class="alert">
+                <span class="alert_text"></span>
+                <span class="alert_close_btn">&times;</span>
+            </div>
+            <input class="send" type="submit" disabled />
+        </form>
+    </div>
+    <script src="./js/index.js" type="module"></script>
+</body>
+
+</html>
