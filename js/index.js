@@ -1,6 +1,7 @@
 "use strict";
 import { dataURLtoBlob, fetchApi, createElementFromString } from "./helpers.js";
 import { Loader } from './loader.js';
+import { Modal } from './modal.js';
 
 window.onload = function () {
     const inputFile = document.querySelector("input[name=photos]");
@@ -10,37 +11,48 @@ window.onload = function () {
     const alertText = document.querySelector('.alert_text');
     const btnAlertClose = document.querySelector('.alert_close_btn');
     const btnSendForm = document.querySelector('.send');
-    let Load = new Loader();
-
     const MAX_WIDTH = 900;
     const MAX_HEIGHT = 700;
+    let Load = new Loader();
 
     function readFiles(files) {
+        let total = files.length;
+        let loaded = 0;
+        Load.show();
+
         for (let i = 0; i < files.length; i++) {
-            processFile(files[i]);
+            let reader = new FileReader();
+
+            reader.onload = async function (e) {
+                try {
+                    loaded++;
+                    /*if (loaded == 5) {
+                        readerReader.abort() //прерывание чтения файла, необходимо для теста попадания в reader.onerror
+                    }*/
+
+                    let originalImg = new Image();
+                    originalImg.src = e.target.result;
+                    compressImage(originalImg.src);
+
+                    if (loaded == total) {
+                        Load.hide();
+                    }
+
+                    isDisableForm();
+                } catch (e) {
+                    Load.hide();
+                    showAlert(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`, "warning");
+                }
+            }
+
+            reader.onerror = function (e) {
+                Load.hide();
+                showAlert(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`, "warning");
+            }
+
+            reader.readAsDataURL(files[i]);
         }
         inputFile.value = '';
-    }
-
-    function processFile(file) {
-        let reader = new FileReader();
-
-        reader.onload = async function (e) {
-            try {
-                let originalImg = new Image();
-                originalImg.src = e.target.result;
-                await compressImage(originalImg.src);
-                isDisableForm();
-            } catch (e) {
-                showAlert(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`);
-            }
-        }
-
-        reader.onerror = function (e) {
-            showAlert(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`);
-        }
-
-        reader.readAsDataURL(file);
     }
 
     function compressImage(base64) {
@@ -78,7 +90,7 @@ window.onload = function () {
             }
 
             img.error = function (e) {
-                reject("Error")
+                reject(e);
             }
 
             img.src = base64;
@@ -99,7 +111,7 @@ window.onload = function () {
         li.addEventListener('click', (event) => {
             let target = event.target;
             if (target.tagName === "IMG") {
-                getModal(base64);
+                showModal(base64);
             }
         });
     }
@@ -123,28 +135,8 @@ window.onload = function () {
         }
     }
 
-    function getModal(base64) {
-        let templateDefault = `<div class="modal">
-            <div class="modal-content">
-                <span class="close" data-modal="close"></span>
-                <img class="modal-img" src=${base64}>
-            </div>
-        </div>`;
-        let div = createElementFromString(templateDefault);
-        let closeBtn = div.querySelector(".close");
-
-        document.body.appendChild(div);
-
-        function removeModal(event) {
-            if (event.target.dataset.modal === "close") {
-                div.remove();
-                window.removeEventListener('click', removeModal);
-            }
-        }
-
-        //EventListener
-        closeBtn.addEventListener('click', removeModal);
-        window.addEventListener('click', removeModal);
+    function showModal(base64) {
+        new Modal(base64);
     }
 
     function showAlert(text = "", type = "success") {
@@ -186,7 +178,3 @@ window.onload = function () {
     listPreview.addEventListener("click", removeItemPreview);
     btnAlertClose.addEventListener("click", _ => alert.style.display = "none");
 }
-
-
-
-

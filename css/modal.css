@@ -19,7 +19,6 @@
 
 .modal-content {
     position: relative;
-    background-color: #fefefe;
     line-height: 0;
 }
 
@@ -52,4 +51,32 @@
     font-weight: bold;
     font-size: 30px;
     line-height: 0;
+}
+
+.modal-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.modal-controls .rotate,
+.download {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background-image: url(./../img/rotate.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
+}
+
+.modal-controls .download {
+    margin-left: 10px;
+    background-image: url(./../img/download.png);
+}
+
+.canvas {
+    max-height: 85vh;
+    max-width: 85vw;
 }
