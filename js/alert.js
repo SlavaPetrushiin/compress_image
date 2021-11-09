@@ -7,9 +7,13 @@ export const ALERT_TYPE = {
     success: "success"
 }
 
+const TIMEOUT = 10000;
+
 export function Alert() {
     this.alert;
     this.closeBtn;
+    this.listAlerts = document.querySelector(".list_alerts");
+    this.timeout;
 
     this.show = (text = "", type = ALERT_TYPE.success) => {
         let templateDefault = `<div class="alert">
@@ -21,14 +25,17 @@ export function Alert() {
         this.alert.classList.add(`alert__${type}`);
         this.closeBtn = this.alert.querySelector(".alert_close_btn");
 
-        document.body.appendChild(this.alert);
+        this.listAlerts.appendChild(this.alert);
 
         this.closeBtn.addEventListener("click", this.hide);
+
+        this.timeout = setTimeout(() => this.hide(), TIMEOUT);
     };
 
     this.hide = () => {
         if (this.alert) {
             this.alert.remove();
+            clearTimeout(this.timeout);
         }
     };
 }
