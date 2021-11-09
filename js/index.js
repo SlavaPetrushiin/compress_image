@@ -21,9 +21,9 @@ window.onload = function () {
         for (let i = 0; i < files.length; i++) {
             let reader = new FileReader();
 
-            reader.onloadstart = function () {
+            /*reader.onloadstart = function () {
                 reader.abort()
-            }
+            }*/
 
             reader.onloadend = function (event) {
                 let contents = event.target.result;
