@@ -1,7 +1,7 @@
 "use strict";
 import { createElementFromString } from "./helpers.js";
 
-export function Modal(base64 = "") {
+export function Modal(base64 = "", compPreview) { // base64 === "string"  compPreview === Preview
     this.templateDefault = `<div class="modal" data-type="">
         <div class="modal-content">
             <span class="close" data-modal="close"></span>
@@ -22,18 +22,15 @@ export function Modal(base64 = "") {
     let context = canvas.getContext("2d");
     let download = div.querySelector(".download");
     let currentAngle = 0;
-    
+
     canvas.width = img.width;
     canvas.height = img.height;
     context.drawImage(img, 0, 0, img.width, img.height);
 
     document.body.appendChild(div);
 
-    function removeModal(event) {
-        if (event.target.dataset.modal === "close") {
-            div.remove();
-            window.removeEventListener('click', removeModal);
-        }
+    function removeModal() {
+        div.remove();
     }
 
     function rotateImage() {
@@ -49,6 +46,8 @@ export function Modal(base64 = "") {
             -img.width / 2,
             -img.height / 2);
         context.restore();
+
+        compPreview.changeSrcImage(canvas.toDataURL()); //обновить при повороте Preview
     }
 
     function downloadImage(e) {
@@ -63,5 +62,4 @@ export function Modal(base64 = "") {
     download.addEventListener('click', downloadImage);
     closeBtn.addEventListener('click', removeModal);
     rotateBtn.addEventListener('click', rotateImage);
-    window.addEventListener('click', removeModal);
 }

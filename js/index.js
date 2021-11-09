@@ -1,24 +1,23 @@
 "use strict";
-import { dataURLtoBlob, fetchApi, createElementFromString } from "./helpers.js";
+import { dataURLtoBlob, fetchApi } from "./helpers.js";
 import { Loader } from './loader.js';
-import { Modal } from './modal.js';
+import { Preview } from './preview.js';
+import { Alert, ALERT_TYPE } from './alert.js';
 
 window.onload = function () {
     const inputFile = document.querySelector("input[name=photos]");
     const listPreview = document.querySelector('.list_preview');
     const formElem = document.querySelector('#formElem');
-    const alert = document.querySelector('.alert');
-    const alertText = document.querySelector('.alert_text');
-    const btnAlertClose = document.querySelector('.alert_close_btn');
-    const btnSendForm = document.querySelector('.send');
     const MAX_WIDTH = 900;
     const MAX_HEIGHT = 700;
     let Load = new Loader();
+    let AlertPop = new Alert();
 
     function readFiles(files) {
         let total = files.length;
         let loaded = 0;
         Load.show();
+        AlertPop.hide();
 
         for (let i = 0; i < files.length; i++) {
             let reader = new FileReader();
@@ -32,22 +31,20 @@ window.onload = function () {
 
                     let originalImg = new Image();
                     originalImg.src = e.target.result;
-                    compressImage(originalImg.src);
+                    await compressImage(originalImg.src);
 
                     if (loaded == total) {
                         Load.hide();
                     }
-
-                    isDisableForm();
                 } catch (e) {
                     Load.hide();
-                    showAlert(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`, "warning");
+                    AlertPop.show(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`, ALERT_TYPE.warning);
                 }
             }
 
             reader.onerror = function (e) {
                 Load.hide();
-                showAlert(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`, "warning");
+                AlertPop.show(`Не удалось выполнить загрузку, Error: ${e}, ${e.message}`, ALERT_TYPE.warning);
             }
 
             reader.readAsDataURL(files[i]);
@@ -82,11 +79,11 @@ window.onload = function () {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                let compressData = canvas.toDataURL("image/jpeg", 0.7);
+                let base64 = canvas.toDataURL("image/jpeg", 0.7);
 
-                createItemPreview(listPreview, compressData);
+                new Preview(listPreview, base64);
 
-                resolve(compressData);
+                resolve(base64);
             }
 
             img.error = function (e) {
@@ -97,49 +94,16 @@ window.onload = function () {
         })
     }
 
-    function createItemPreview(parent, base64) {
-        if (!base64 || !parent) return;
-
-        let templateDefault = `<li class="preview_item">
-            <span class="remove"></span>
-            <img class="preview_img" src=${base64}>
-        </li>`;
-
-        let li = createElementFromString(templateDefault, "li");
-        parent.appendChild(li);
-
-        li.addEventListener('click', (event) => {
-            let target = event.target;
-            if (target.tagName === "IMG") {
-                showModal(base64);
-            }
-        });
-    }
-
-    function removeItemPreview(event) {
-        let target = event.target;
-
-        if (target.tagName !== 'SPAN') {
-            return;
+    function isValidateForm() {
+        //Если первый элемент в списке есть и у него установлен дата атрибут === "preview-item", то можно отправить данные на сервер
+        const firstElem = listPreview.firstElementChild;
+        if (firstElem && firstElem.dataset.previewItem) {
+            return true;
         }
-        let parent = target.closest('li');
-        parent.remove();
-        isDisableForm();
+        return false;
     }
 
-    function isDisableForm() {
-        if (listPreview.firstChild) {
-            btnSendForm.disabled = false;
-        } else {
-            btnSendForm.disabled = true;
-        }
-    }
-
-    function showModal(base64) {
-        new Modal(base64);
-    }
-
-    function showAlert(text = "", type = "success") {
+    /*function showAlert(text = "", type = ALERT_TYPE.success) {
         if (alert.style.display === 'block') {
             alert.style.display = "none";
             alertText.innerText = "";
@@ -149,11 +113,17 @@ window.onload = function () {
         alert.style.display = "flex";
         alert.classList.add(`alert__${type}`);
         alertText.innerText = text;
-    }
+    }*/
 
     /* Listener */
     formElem.addEventListener('submit', event => {
         event.preventDefault();
+
+        if (!isValidateForm()) {
+            AlertPop.show("Необходимо загрузить изображения", ALERT_TYPE.warning);
+            return;
+        }
+
         let formData = new FormData();
         let files = document.querySelectorAll(".preview_img");
         files.forEach(el => formData.append("image", dataURLtoBlob(el.src)));
@@ -165,16 +135,15 @@ window.onload = function () {
         })
             .then(response => {
                 listPreview.innerHTML = '';
-                showAlert('Данные отправлены', 'success');
+                AlertPop.show('Данные отправлены', ALERT_TYPE.success);
             })
             .catch(e => {
-                showAlert(`${e}`, 'error');
+                AlertPop.show(`${e}`, ALERT_TYPE.error);
             })
             .finally(() => {
                 Load.hide();
             })
     });
     inputFile.addEventListener("change", (event) => readFiles(event.target.files));
-    listPreview.addEventListener("click", removeItemPreview);
-    btnAlertClose.addEventListener("click", _ => alert.style.display = "none");
+    //listPreview.addEventListener("click", removeItemPreview);
 }
