@@ -12,7 +12,6 @@ window.onload = function () {
     const MAX_HEIGHT = 700;
     let Load = new Loader();
 
-
     function readFiles(files) {
         let total = files.length;
         let loaded = 0;
@@ -21,7 +20,7 @@ window.onload = function () {
         for (let i = 0; i < files.length; i++) {
             let reader = new FileReader();
 
-            /*reader.onloadstart = function () {
+            /*reader.onloadstart = function () { // Для ошибки
                 reader.abort()
             }*/
 
@@ -50,7 +49,7 @@ window.onload = function () {
         inputFile.value = '';
     }
 
-    function compressImage(base64) {
+    function compressImage(base64 = "") {
         const canvas = document.createElement('canvas');
         const img = new Image();
 
@@ -77,7 +76,7 @@ window.onload = function () {
             ctx.drawImage(img, 0, 0, width, height);
 
             let base64 = canvas.toDataURL("image/jpeg", 0.7);
-
+            //Создать Preview
             new Preview(listPreview, base64);
         }
 
@@ -93,7 +92,7 @@ window.onload = function () {
         return false;
     }
 
-    formElem.addEventListener('submit', event => {
+    function sendForm(event) {
         event.preventDefault();
 
         if (!isValidateForm()) {
@@ -120,6 +119,8 @@ window.onload = function () {
             .finally(() => {
                 Load.hide();
             })
-    });
+    }
+
     inputFile.addEventListener("change", (event) => readFiles(event.target.files));
+    formElem.addEventListener('submit', sendForm);
 }
