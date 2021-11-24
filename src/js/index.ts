@@ -109,7 +109,7 @@ window.onload = function () {
         }
 
         if (!params['ServiceTaskID'] && !params['UserName']) {
-            new Alert().show("Некорректные данные: ServiceTaskID или UserName", ALERT_TYPE.error);
+            new Alert().show("Некорректные данные в url: ServiceTaskID или UserName", ALERT_TYPE.error);
             return;
         }
 
@@ -125,7 +125,7 @@ window.onload = function () {
         }
 
         function sendFile(file) {
-            return WebApi.Superbase_UploadSTPhotoAdd(dataURLtoBlob(file.src), { ServiceTaskID: 668670, UserName: "suser-7843" })
+            return WebApi.Superbase_UploadSTPhotoAdd(dataURLtoBlob(file.src), { ServiceTaskID: params.ServiceTaskID, UserName: params.UserName })
                 .then(res => {
                     if (res >= 1) {
                         new Alert().show(`файл добавлен ${count++}`, ALERT_TYPE.success);
