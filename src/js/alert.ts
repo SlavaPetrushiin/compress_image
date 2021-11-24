@@ -1,5 +1,5 @@
 "use strict";
-import { createElementFromString } from "./helpers.js";
+import { createElementFromString } from "./helpers";
 
 export const ALERT_TYPE = {
     error: "error",
@@ -24,8 +24,7 @@ export function Alert() {
         this.alert = createElementFromString(templateDefault);
         this.alert.classList.add(`alert__${type}`);
         this.closeBtn = this.alert.querySelector(".alert_close_btn");
-
-        this.listAlerts.appendChild(this.alert);
+        this.listAlerts.prepend(this.alert);
 
         this.closeBtn.addEventListener("click", this.hide);
 

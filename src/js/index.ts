@@ -1,16 +1,27 @@
 "use strict";
-import { dataURLtoBlob, fetchApi } from "./helpers.js";
-import { Loader } from './loader.js';
-import { Preview } from './preview.js';
-import { Alert, ALERT_TYPE } from './alert.js';
+import { dataURLtoBlob } from "./helpers";
+import { Loader } from './loader';
+import { Preview } from './preview';
+import { Alert, ALERT_TYPE } from './alert';
+import WebApi from "./api";
+
+function getParams(url: any = window.location) {
+    let params = {} as { UserName: string, ServiceTaskID: string };
+
+    new URL(url).searchParams.forEach(function (val, key) {
+        params[key] = val;
+    });
+    return params;
+}
 
 window.onload = function () {
-    const inputFile = document.querySelector("input[name=photos]");
+    const inputFile: any = document.querySelector("input[name=photos]");
     const listPreview = document.querySelector('.list_preview');
     const formElem = document.querySelector('#formElem');
     const MAX_WIDTH = 900;
     const MAX_HEIGHT = 700;
     let Load = new Loader();
+    const params = getParams();
 
     function readFiles(files) {
         let total = files.length;
@@ -19,13 +30,8 @@ window.onload = function () {
 
         for (let i = 0; i < files.length; i++) {
             let reader = new FileReader();
-
-            /*reader.onloadstart = function () { // Для ошибки
-                reader.abort()
-            }*/
-
             reader.onloadend = function (event) {
-                let contents = event.target.result;
+                let contents = event.target.result as string;
                 let error = event.target.error;
 
                 if (error != null) {
@@ -34,7 +40,7 @@ window.onload = function () {
                 } else {
                     loaded++;
 
-                    let originalImg = new Image();
+                    let originalImg: HTMLImageElement = new Image();
                     originalImg.src = contents;
                     compressImage(originalImg.src);
 
@@ -46,6 +52,7 @@ window.onload = function () {
 
             reader.readAsDataURL(files[i]);
         }
+
         inputFile.value = '';
     }
 
@@ -53,7 +60,7 @@ window.onload = function () {
         const canvas = document.createElement('canvas');
         const img = new Image();
 
-        img.onload = function (e) {
+        img.onload = function (e: any) {
             let width = e.target.width;
             let height = e.target.height;
 
@@ -85,7 +92,7 @@ window.onload = function () {
 
     function isValidateForm() {
         //Если первый элемент в списке есть и у него установлен дата атрибут === "preview-item", то можно отправить данные на сервер
-        const firstElem = listPreview.firstElementChild;
+        const firstElem: any = listPreview.firstElementChild;
         if (firstElem && firstElem.dataset.previewItem) {
             return true;
         }
@@ -94,33 +101,48 @@ window.onload = function () {
 
     function sendForm(event) {
         event.preventDefault();
+        let count = 1;
 
         if (!isValidateForm()) {
             new Alert().show("Необходимо загрузить изображения", ALERT_TYPE.warning);
             return;
         }
 
-        let formData = new FormData();
-        let files = document.querySelectorAll(".preview_img");
-        files.forEach(el => formData.append("image", dataURLtoBlob(el.src)));
-        Load.show();
+        if (!params['ServiceTaskID'] && !params['UserName']) {
+            new Alert().show("Некорректные данные: ServiceTaskID или UserName", ALERT_TYPE.error);
+            return;
+        }
 
-        fetchApi("", {
-            method: "POST",
-            body: formData
-        })
-            .then(response => {
-                listPreview.innerHTML = '';
-                new Alert().show('Данные отправлены', ALERT_TYPE.success);
-            })
-            .catch(e => {
-                new Alert().show(`${e}`, ALERT_TYPE.error);
-            })
-            .finally(() => {
+        let files: NodeListOf<HTMLImageElement> = document.querySelectorAll(".preview_img");
+
+        function forEachPromise(files, fn) {
+            Load.show();
+            return files.reduce((promise, item) => promise.then(() => {
+                return (async function () {
+                    await fn(item);
+                })()
+            }), Promise.resolve());
+        }
+
+        function sendFile(file) {
+            return WebApi.Superbase_UploadSTPhotoAdd(dataURLtoBlob(file.src), { ServiceTaskID: 668670, UserName: "suser-7843" })
+                .then(res => {
+                    if (res >= 1) {
+                        new Alert().show(`файл добавлен ${count++}`, ALERT_TYPE.success);
+                        file.closest(".preview_item").remove();
+                    }
+                })
+                .catch((e) => {
+                    new Alert().show(`${e}`, ALERT_TYPE.error)
+                })
+        }
+
+        forEachPromise(Array.from(files), sendFile)
+            .then(() => {
                 Load.hide();
             })
     }
 
-    inputFile.addEventListener("change", (event) => readFiles(event.target.files));
+    inputFile.addEventListener("change", (event) => { readFiles(event.target.files) });
     formElem.addEventListener('submit', sendForm);
 }

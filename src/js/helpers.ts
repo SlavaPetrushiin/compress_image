@@ -1,4 +1,3 @@
-"use strict";
 export function dataURLtoBlob(dataUrl) {
     let arr = dataUrl.split(',');
     let mime = arr[0].match(/:(.*?);/)[1];

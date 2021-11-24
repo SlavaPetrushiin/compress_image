@@ -1,6 +1,5 @@
-"use strict";
-import { createElementFromString } from "./helpers.js";
-import { Modal } from './modal.js';
+import { createElementFromString } from "./helpers";
+import { Modal } from './modal';
 
 export function Preview(parent, base64 = "") {
     this.templateDefault = `<li class="preview_item" data-preview-item="preview-item">

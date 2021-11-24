@@ -1,5 +1,5 @@
 "use strict";
-import { createElementFromString } from "./helpers.js";
+import { createElementFromString } from "./helpers";
 
 export function Modal(base64 = "", compPreview) { // base64 === "string"  compPreview === Preview
     this.templateDefault = `<div class="modal" data-type="">
@@ -7,20 +7,19 @@ export function Modal(base64 = "", compPreview) { // base64 === "string"  compPr
             <span class="close" data-modal="close"></span>
             <canvas class="canvas"></canvas>
             <div class="modal-controls">
-                <span class="rotate"></span>
-                <span class="download"></span>
+                <span class="rotate"></span>                
             </div>
         </div>
     </div>`;
 
-    let div = createElementFromString(this.templateDefault);
+    let div: any = createElementFromString(this.templateDefault);
     let closeBtn = div.querySelector(".close");
     let rotateBtn = div.querySelector(".rotate");
     let img = new Image();
     img.src = base64;
     let canvas = div.querySelector(".canvas");
     let context = canvas.getContext("2d");
-    let download = div.querySelector(".download");
+    //let download = div.querySelector(".download");
     let currentAngle = 0;
 
     canvas.width = img.width;
@@ -50,16 +49,16 @@ export function Modal(base64 = "", compPreview) { // base64 === "string"  compPr
         compPreview.changeSrcImage(canvas.toDataURL()); //обновить при повороте Preview
     }
 
-    function downloadImage(e) {
-        const link = document.createElement('a');
+    /*function downloadImage(e) {
+        const link: any = document.createElement('a');
         link.download = 'download.jpeg';
         link.href = canvas.toDataURL("image/jpeg", 0.7);
         link.click();
         link.delete;
-    }
+    }*/
 
     //EventListener
-    download.addEventListener('click', downloadImage);
+    //download.addEventListener('click', downloadImage);
     closeBtn.addEventListener('click', removeModal);
     rotateBtn.addEventListener('click', rotateImage);
 }

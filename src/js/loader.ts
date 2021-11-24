@@ -1,5 +1,5 @@
 "use strict";
-import { createElementFromString } from "./helpers.js";
+import { createElementFromString } from "./helpers";
 
 export function Loader() {
     this.templateDefault = `<div class="wrapper_loader"><div class="lds-default"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>`;
