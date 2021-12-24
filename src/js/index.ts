@@ -18,8 +18,8 @@ window.onload = function () {
     const inputFile: any = document.querySelector("input[name=photos]");
     const listPreview = document.querySelector('.list_preview');
     const formElem = document.querySelector('#formElem');
-    const MAX_WIDTH = 900;
-    const MAX_HEIGHT = 700;
+    const MAX_WIDTH = 1000;
+    const MAX_HEIGHT = 1000;
     let Load = new Loader();
     const params = getParams();
 
@@ -107,7 +107,7 @@ window.onload = function () {
             new Alert().show("Необходимо загрузить изображения", ALERT_TYPE.warning);
             return;
         }
-
+        console.log("PARAMS: ", params)
         if (!params['ServiceTaskID'] && !params['UserName']) {
             new Alert().show("Некорректные данные в url: ServiceTaskID или UserName", ALERT_TYPE.error);
             return;
@@ -125,10 +125,10 @@ window.onload = function () {
         }
 
         function sendFile(file) {
-            return WebApi.Superbase_UploadSTPhotoAdd(dataURLtoBlob(file.src), { ServiceTaskID: params.ServiceTaskID, UserName: params.UserName })
+            return WebApi.Superbase_UploadSTPhotoAdd(new File([dataURLtoBlob(file.src)], "name.jpeg"), { ServiceTaskID: params.ServiceTaskID, UserName: params.UserName, })
                 .then(res => {
                     if (res >= 1) {
-                        new Alert().show(`файл добавлен ${count++}`, ALERT_TYPE.success);
+                        new Alert().show(`файл ${count++} добавлен`, ALERT_TYPE.success);
                         file.closest(".preview_item").remove();
                     }
                 })
@@ -146,3 +146,6 @@ window.onload = function () {
     inputFile.addEventListener("change", (event) => { readFiles(event.target.files) });
     formElem.addEventListener('submit', sendForm);
 }
+
+//"668670"
+//suser-7843
